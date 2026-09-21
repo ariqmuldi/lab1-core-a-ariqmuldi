@@ -1,0 +1,72 @@
+name: Lab 1 core checks
+
+# The same checks as `make test`, on every push. Green here is not full marks:
+# most of this lab's marks are for the reasoning in RESULTS.md and for the oral
+# test, neither of which a script can see.
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler version
+        run: gcc --version
+
+      - name: Build
+        run: make
+
+      - name: src/given.c is unmodified
+        run: bash tests/run_tests.sh given
+
+      - name: The fix is correct
+        run: bash tests/run_tests.sh fixed
+
+      - name: The alternative behaves as the brief says
+        run: bash tests/run_tests.sh alt
+
+      - name: The measurement
+        run: bash tests/run_tests.sh speed
+
+      - name: PREDICTION.md and RESULTS.md
+        run: bash tests/run_tests.sh report
+
+  # -------------------------------------------------------------------------
+  # A separate job on purpose, so nothing here can affect the job above,
+  # which is Part 1's autograder. This one grades Part 2 (T1-T4, 50 marks --
+  # see lab1-rubric.md). Pinned to ubuntu-24.04, not ubuntu-latest, because
+  # the mull package installed below is built specifically for that version
+  # and would silently stop matching if GitHub moves "latest" to a newer
+  # Ubuntu release.
+  unit-testing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install unit-testing toolchain (Criterion, gcovr, clang, mull)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcriterion-dev clang python3-pip
+          pip install --break-system-packages --no-cache-dir gcovr
+          curl -sL -o /tmp/mull.deb \
+            "https://github.com/mull-project/mull/releases/download/0.34.1/Mull-18-0.34.1-LLVM-18.1.3-ubuntu-amd64-24.04.deb"
+          sudo dpkg -i /tmp/mull.deb
+
+      - name: Unit tests written and passing
+        run: bash tests/run_tests.sh unit
+
+      - name: Unit-test coverage threshold
+        run: bash tests/run_tests.sh unitcov
+
+      - name: Mutation testing ran and reported a result
+        run: bash tests/run_tests.sh mutationcheck
