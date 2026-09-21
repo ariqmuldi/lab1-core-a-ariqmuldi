@@ -12,11 +12,11 @@
 
 #include "sum.h"
 
-/* TODO: whatever shared state your correction needs. */
+/* whatever shared state your correction needs. */
 static volatile long long total;
 static pthread_mutex_t lock;
 
-/* TODO: the per-thread task struct. What does a thread own here, and what does
+/* the per-thread task struct. What does a thread own here, and what does
  *       it share? Write it down before you write the struct. */
 typedef struct {
     int             id;
@@ -25,7 +25,7 @@ typedef struct {
     const long long *values;
 } arg_t;
 
-/* TODO: the worker. */
+/* the worker. */
 static void *worker(void *p)
 {
     arg_t *a = (arg_t *)p;

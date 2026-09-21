@@ -8,7 +8,7 @@
 
 #include "sum.h"
 
-/* TODO: the alternative described in BRIEF.md, §"The alternative". */
+/* the alternative described in BRIEF.md, §"The alternative". */
 static volatile long long total;
 static pthread_mutex_t lock;
 
